@@ -1,6 +1,6 @@
 # Outside packages
 import subprocess
-import os
+from os import path, getcwd, set_blocking
 from tkinter import Tk, ttk, filedialog, IntVar, StringVar, Menu, Toplevel, Label, PhotoImage
 from tksheet import Sheet
 from itertools import compress
@@ -9,6 +9,7 @@ from itertools import compress
 from utils import folder, stringify, rotate2DArray, reduceBitwiseOr, openURL, keyName, keyCodes
 from patching import genPatchedExe
 from movieparsing import loadMovie, recordingToInputs, inputsToRecording, saveMovie
+from config import configLoad, configSave
 
 # Constants
 import constants as c
@@ -18,6 +19,9 @@ class mainWindowClass:
     ## A class to hold variables in the main window
 
     def __init__(self):
+        # Load the configuration
+        self.config = configLoad(c.CONFIG_PATH)
+
         # Create the base window
         self.gameProcess = None
         self.windowExists = True
@@ -37,7 +41,7 @@ class mainWindowClass:
         self.dataWinFileRow = filePromptWithHistory(self.mainWindowFrame, 1, 0, c.DATAWIN_FILE_PROMPT, True, [("*.win files", "*.win"), ("All files","*.*")], "*.win", False, self, defaultPath=self.exeFileRow.combobox.get())
         self.movieFileRow = filePromptWithHistory(self.mainWindowFrame, 2, 0, c.MOVIE_FILE_PROMPT, False, [("GMReplay files", "*.gmr"), ("All files","*.*")], "*.gmr", False, self)
 
-        # Record/play buttons, passing the row objects themselves
+        # Record/play buttons
         self.recordPlayRow = recordPlayRadioButtons(self.mainWindowFrame, 3, 0, c.RECORDING_STRING, c.PLAYBACK_STRING, c.START_STRING, c.STOP_STRING, self)
 
         # Debug button
@@ -56,7 +60,7 @@ class mainWindowClass:
         # Menu bar
         self.menuBar = Menu(self.root)
         self.fileMenu = Menu(self.menuBar, tearoff = 0)
-        self.fileMenu.add_command(label=c.SAVE_OPTION_STRING, command=self.saveMovieInputs(movieFilePath=self.movieFileRow.combobox.get()))
+        self.fileMenu.add_command(label=c.SAVE_OPTION_STRING, command=self.saveMovieInputs)
         self.fileMenu.add_command(label=c.SAVE_AS_OPTION_STRING, command=self.saveAsCommand)
         self.menuBar.add_cascade(label="File", menu=self.fileMenu)
 
@@ -66,16 +70,27 @@ class mainWindowClass:
 
         self.root.config(menu=self.menuBar)
 
-    def areAllFilesSelected(self):
-        return self.exeFileRow.combobox.get() != "" and self.dataWinFileRow.combobox.get() != "" and self.movieFileRow.combobox.get() != ""
+        # Run these once to draw all the window elements while the movie is loading
+        self.root.update_idletasks()
+        self.root.update()
 
-    def isExeSelectedButNotDataWin(self):
-        return self.exeFileRow.combobox.get() != "" and self.dataWinFileRow.combobox.get() == ""
+        # Load history/last movie after everything else has been initialized
+        for filePrompt in (self.exeFileRow, self.dataWinFileRow, self.movieFileRow):
+            if len(filePrompt.history) > 0:
+                filePrompt.comboboxVar.set(filePrompt.history[0])
+
+    def areAllFilesSelected(self):
+        try:
+            return self.exeFileRow.combobox.get() != "" and self.dataWinFileRow.combobox.get() != "" and self.movieFileRow.combobox.get() != ""
+        except AttributeError: # The three objects don't exist yet
+            return False
 
     def loadMovieInputs(self, movieFilePath):
         return self.inputGridObj.loadMovieInputs(movieFilePath)
 
     def saveMovieInputs(self, movieFilePath=None):
+        if movieFilePath == None:
+            movieFilePath = self.movieFileRow.combobox.get()
         return self.inputGridObj.saveMovieInputs(movieFilePath)
 
     def saveAsCommand(self):
@@ -120,21 +135,26 @@ class mainWindowClass:
 class filePromptWithHistory:
     ## Consists of a label, a combo box, and a browse button. Keeps track of history for the session.
 
-    def __init__(self, frame, rowOffset, columnOffset, promptText, fileExists, extensions, defaultExtension, isFolder, mainWindowObj, defaultPath = os.getcwd()):
+    def __init__(self, frame, rowOffset, columnOffset, promptText, fileExists, extensions, defaultExtension, isFolder, mainWindowObj, defaultPath = getcwd()):
         self.frame = frame
         self.mainWindowObj = mainWindowObj
         pad = c.GLOBAL_PADDING
         self.fileExists = fileExists
+        self.promptText = promptText
 
-        self.history = []
+        self.history = self.loadHistory()
         self.isFolder = isFolder
 
         # Create the label
         self.label = ttk.Label(frame, text=promptText)
         self.label.grid(column=0+columnOffset, row=0+rowOffset, sticky="E", padx=pad, pady=pad)
 
+        self.comboboxVar = StringVar(value=self.history[0])
+
+        self.comboboxVar.trace_variable('w', self.onFieldChange)
+
         # Create the combo box
-        self.combobox = ttk.Combobox(frame, values=self.history, width=80)
+        self.combobox = ttk.Combobox(frame, values=self.history, textvar=self.comboboxVar, width=80)
         self.combobox.grid(column=1+columnOffset, row=0+rowOffset, padx=pad, pady=pad, sticky="EW", columnspan=10)
 
         # Create the browse button
@@ -148,7 +168,7 @@ class filePromptWithHistory:
 
     def browseFile(self, promptText, extensions=\
                    [("All files","*.*"), ("GMReplay files", "*.gmr"), ("Executable files", "*.exe"), ("*.win files", "*.win")],\
-                   defaultExtension="*.gmr", defaultPath=os.getcwd(), fileExists=None):
+                   defaultExtension="*.gmr", defaultPath=getcwd(), fileExists=None):
         ## This searches for a file and adds it to the combo box history
         if fileExists == None:
             fileExists = self.fileExists
@@ -157,26 +177,61 @@ class filePromptWithHistory:
         if filePath:
             self.combobox.set(filePath)
             self.addToHistory(filePath)
-            if promptText == c.MOVIE_FILE_PROMPT:
-                self.mainWindowObj.loadMovieInputs(filePath)
         return filePath
 
     def addToHistory(self, filePath):
         ## Add the file path to history if it's not already there, and also run some checks for actions to be completed when a file is selected
         if filePath not in self.history:
             self.history.insert(0, filePath)
+
+            # Restrict number of entries
+            self.history = self.history[:int(self.mainWindowObj.config.File_History.maxhistoryentries)]
+
             self.combobox["values"] = self.history
 
-            # If the exe was just selected, try to select the data.win by default
-            if self.mainWindowObj.isExeSelectedButNotDataWin():
-                dataWinDefaultPath = folder(self.mainWindowObj.exeFileRow.combobox.get()) + "/data.win"
-                if os.path.isfile(dataWinDefaultPath):
-                    # Don't add this to history because the user did not select it!
-                    self.mainWindowObj.dataWinFileRow.combobox.set(dataWinDefaultPath)
+            # Update the configuration and save
+            match self.promptText:
+                case c.EXE_FILE_PROMPT:
+                    self.mainWindowObj.config.File_History.game_exe = self.history
+                case c.DATAWIN_FILE_PROMPT:
+                    self.mainWindowObj.config.File_History.data_win = self.history
+                case c.MOVIE_FILE_PROMPT:
+                    self.mainWindowObj.config.File_History.movie = self.history
 
-            # If all three files have been selected, enable the start buttons
-            if self.mainWindowObj.areAllFilesSelected():
-                self.mainWindowObj.recordPlayRow.enableStart()
+            configSave(self.mainWindowObj.config, c.CONFIG_PATH)
+
+        # If the exe was just selected, try to select the data.win by default
+        if self.promptText == c.EXE_FILE_PROMPT:
+            dataWinDefaultPath = folder(self.mainWindowObj.exeFileRow.combobox.get()) + "/data.win"
+            if path.isfile(dataWinDefaultPath):
+                self.mainWindowObj.dataWinFileRow.addToHistory(dataWinDefaultPath)
+                self.mainWindowObj.dataWinFileRow.combobox.set(dataWinDefaultPath)
+
+        # If all three files have been selected, enable the start buttons
+        if self.mainWindowObj.areAllFilesSelected():
+            self.mainWindowObj.recordPlayRow.enableStart()
+
+    def loadHistory(self):
+        ## Loads the history from appdata
+        match self.promptText:
+            case c.EXE_FILE_PROMPT:
+                self.history = self.mainWindowObj.config.File_History.game_exe
+            case c.DATAWIN_FILE_PROMPT:
+                self.history = self.mainWindowObj.config.File_History.data_win
+                # Since this loads after the exe file, we should do the updates now
+                dataWinDefaultPath = folder(self.mainWindowObj.exeFileRow.combobox.get()) + "/data.win"
+                if path.isfile(dataWinDefaultPath):
+                    self.addToHistory(dataWinDefaultPath)
+            case c.MOVIE_FILE_PROMPT:
+                self.history = self.mainWindowObj.config.File_History.movie
+
+        return self.history
+
+    def onFieldChange(self, var, index, mode):
+        if path.isfile(self.comboboxVar.get()):
+            self.addToHistory(self.comboboxVar.get())
+            if self.promptText == c.MOVIE_FILE_PROMPT:
+                self.mainWindowObj.loadMovieInputs(self.comboboxVar.get())
 
 
 class recordPlayRadioButtons:
@@ -207,8 +262,11 @@ class recordPlayRadioButtons:
         frame.grid_columnconfigure(1+columnOffset, weight=0)
         frame.grid_columnconfigure(2+columnOffset, weight=0)
 
-        # Disable after creating the buttons
-        self.disableStart()
+        # Disable Start if the files aren't selected (they can be selected from history)
+        if self.mainWindowObj.areAllFilesSelected() == False:
+            self.disableStart()
+
+        # Alwyas disable Stop on init
         self.disableStop()
 
     def recordOrPlayMovie(self, selection):
@@ -223,11 +281,15 @@ class recordPlayRadioButtons:
 
         # Run the game with the record command
         print(c.GAME_START_STRING)
-        self.mainWindowObj.gameProcess = subprocess.Popen([pathToExe, ("-record" if selection == c.RECORD else "-playback"), self.mainWindowObj.movieFileRow.combobox.get(),\
-                        "-game", self.mainWindowObj.dataWinFileRow.combobox.get(), "-debugoutput", os.getcwd() + "\\debugoutput.log", "|", "cat"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if self.mainWindowObj.config.General.suppress_game_debug_output == "True": # This one hides the console output
+            self.mainWindowObj.gameProcess = subprocess.Popen([pathToExe, ("-record" if selection == c.RECORD else "-playback"),self.mainWindowObj.movieFileRow.combobox.get(),\
+                            "-game", self.mainWindowObj.dataWinFileRow.combobox.get()], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
-        # Prevent blocking of the game process
-        os.set_blocking(self.mainWindowObj.gameProcess.stdout.fileno(), False)
+        else: # This one shows the console output
+            self.mainWindowObj.gameProcess = subprocess.Popen([pathToExe, ("-record" if selection == c.RECORD else "-playback"), self.mainWindowObj.movieFileRow.combobox.get(),\
+                            "-game", self.mainWindowObj.dataWinFileRow.combobox.get(), "-debugoutput", getcwd() + "\\debugoutput.log", "|", "cat"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # Prevent blocking of the game process
+            set_blocking(self.mainWindowObj.gameProcess.stdout.fileno(), False)
 
         # Disable Start, enable Stop, disable radio buttons
         self.movieStart()
@@ -271,7 +333,7 @@ class recordPlayRadioButtons:
     def stopButtonInteract(self): # Commands to run when the stop button is pressed
         print(c.GAME_STOP_STRING)
         self.mainWindowObj.gameProcess.terminate()
-        self.movieEnd()
+        # Movie end will be triggered by detecting the killed process, to prevent loading the movie twice
 
 
 class inputRawRadioButtons:

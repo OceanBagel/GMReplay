@@ -35,8 +35,9 @@ def main():
 
         # Prevent blocking from the game process and print game's stdout to the console
         if mainWindowObj.gameProcess != None:
-            for line in mainWindowObj.gameProcess.stdout:
-                print(line.decode('utf-8').strip())
+            if mainWindowObj.config.General.suppress_game_debug_output == "False":
+                for line in mainWindowObj.gameProcess.stdout:
+                    print(line.decode('utf-8').strip())
 
             if mainWindowObj.gameProcess.poll() != None: # If it is not none, the game was closed
                 print(c.GAME_CLOSED_STRING)

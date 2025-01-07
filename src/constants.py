@@ -1,12 +1,16 @@
+# Outside packages
+from os import path, getenv
+
 # Constants to be used globally
 MIN_PYTHON = (3, 12)
 RECORD = 1
 PLAY = 2
+APPDATA_PATH = path.join(getenv('APPDATA'), "GMReplay")
 
 # Strings
 
 # Main program strings
-VERSION_NUMBER = "v0.1.5"
+VERSION_NUMBER = "v0.1.6"
 STARTUP_STRING = "GMReplay " + VERSION_NUMBER + " by OceanBagel\n"
 MIN_PYTHON_STRING = "Python %s.%s or later is required.\n" % MIN_PYTHON
 LICENSE_HEADER = "Copyright (C) 2024 OceanBagel\n\n"+\
@@ -16,6 +20,8 @@ LICENSE_HEADER = "Copyright (C) 2024 OceanBagel\n\n"+\
 "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. "+\
 "You should have received a copy of the GNU General Public License along with this program. If not, see:"
 LICENSE_LINK = "https://www.gnu.org/licenses/"
+CONFIG_FILENAME = "config.ini"
+CONFIG_PATH = path.join(APPDATA_PATH, CONFIG_FILENAME)
 
 # Patching strings
 PATCH_FILE_NAME = "__temp_GMR_patched_runner.exe"
@@ -69,7 +75,6 @@ INSERT_COLUMN_TEXT = "Insert columns"
 ADDING_COLUMNS_STRING = "Adding columns "
 OK_STRING = "Ok"
 
-
 # Movie parsing strings
 WHEEL_UP = "wheelUp"
 WHEEL_DOWN = "wheelDown"
@@ -77,6 +82,10 @@ MOUSE_X = "mouseX"
 MOUSE_Y = "mouseY"
 TRUNCATED_DATA_STRING = "Warning: frame data was truncated. This may be due to invalid input."
 INVALID_INPUT_STRING = "Invalid input. This cell accepts integer inputs only."
+
+# Config strings
+CONFIG_DATA_ERROR_STRING = "Error when loading config.ini: data error. Reloading default configuration."
+CONFIG_FILE_NOT_FOUND_STRING = "Error when loading config.ini: file not found. Reloading default configuration."
 
 # Other constants
 
