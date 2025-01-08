@@ -67,9 +67,12 @@ GMReplay currently uses the following built-in Python packages:
 - tkinter
 - webbrowser
 - traceback
+- configparser
+- dataclasses
 
 GMReplay also requires the following package, installable through pip:
 - tksheet
+- dacite
 
 Once you have Python and the required packages installed, download the src folder and run gmreplay.py. This will open GMReplay's graphical user interface (GUI), as well as a console where status notifications will be printed.
 
