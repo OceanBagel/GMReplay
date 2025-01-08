@@ -9,11 +9,11 @@ from tksheet import Sheet
 
 # Constants
 import constants as c
+
+# Local packages
 from config import configLoad, configSave
 from movieparsing import inputsToRecording, loadMovie, recordingToInputs, saveMovie
 from patching import genPatchedExe
-
-# Local packages
 from utils import folder, keyCodes, keyName, openURL, reduceBitwiseOr, rotate2DArray, stringify
 
 
@@ -179,10 +179,13 @@ class mainWindowClass:
         self.config.File_History.maxhistoryentries = str(self.maxHistorySpinboxVar.get())
         configSave(self.config, c.CONFIG_PATH)
 
+    def suppressGameOutputUpdate(self):
+        self.config.General.suppress_game_debug_output = self.suppressGameOutputCheckbuttonVar.get()
+        configSave(self.config, c.CONFIG_PATH)
+
     def preferencesWindow(self):
         prefWindowRoot = Toplevel(self.root)
         prefWindowRoot.title(c.PREFERENCES_WINDOW_TITLE)
-        prefWindowRoot.geometry("730x417")
         addIcon(prefWindowRoot)
 
         pad = c.GLOBAL_PADDING
@@ -201,6 +204,17 @@ class mainWindowClass:
 
         clearHistoryButton = ttk.Button(prefWindowRoot, text=c.CLEAR_HISTORY_STRING, command=self.clearFileHistory)
         clearHistoryButton.grid(row=0, column=2, padx=pad, pady=pad)
+
+        self.suppressGameOutputCheckbuttonVar = StringVar(value=self.config.General.suppress_game_debug_output)
+        suppressGameOutputCheckbutton = ttk.Checkbutton(
+            prefWindowRoot,
+            text=c.SUPPRESS_GAME_OUTPUT_STRING,
+            variable=self.suppressGameOutputCheckbuttonVar,
+            offvalue="False",
+            onvalue="True",
+            command=self.suppressGameOutputUpdate,
+        )
+        suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad)
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)

@@ -89,6 +89,7 @@ SAVE_AS_OPTION_STRING = "Save movie file as..."
 PREFERENCES_STRING = "Preferences"
 MAX_HISTORY_STRING = "Maximum file history size:"
 CLEAR_HISTORY_STRING = "Clear file history"
+SUPPRESS_GAME_OUTPUT_STRING = "Suppress game debug output"
 ABOUT_MESSAGE = (
     "GMReplay is a program for creating tool-assisted replays of Windows-based GameMaker games from GameMaker: Studio 1 or later.\n\n"
     + "To submit an issue, receive the most up-to-date versions, or contribute to the development of GMReplay, visit the Github repository at:"
