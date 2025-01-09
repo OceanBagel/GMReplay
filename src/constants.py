@@ -10,7 +10,7 @@ APPDATA_PATH = path.join(getenv("APPDATA", ""), "GMReplay")
 # Strings
 
 # Main program strings
-VERSION_NUMBER = "v0.1.6"
+VERSION_NUMBER = "v0.1.7"
 STARTUP_STRING = "GMReplay " + VERSION_NUMBER + " by OceanBagel\n"
 MIN_PYTHON_STRING = f"Python {MIN_PYTHON[0]}.{MIN_PYTHON[1]} or later is required.\n"
 LICENSE_HEADER = (
@@ -95,7 +95,7 @@ ABOUT_MESSAGE = (
     + "To submit an issue, receive the most up-to-date versions, or contribute to the development of GMReplay, visit the Github repository at:"
 )
 ABOUT_LINK = "https://github.com/OceanBagel/GMReplay/"
-SELECT_COLUMNS_TITLE_STRING = "Select columns to add"
+SELECT_COLUMNS_TITLE_STRING = "Select columns..."
 SELECT_COLUMNS_STRING = "Select columns to add:"
 INSERT_COLUMN_TEXT = "Insert columns"
 ADDING_COLUMNS_STRING = "Adding columns "

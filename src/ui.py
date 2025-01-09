@@ -2,7 +2,7 @@
 import subprocess
 from itertools import compress
 from os import getcwd, path, set_blocking
-from tkinter import IntVar, Label, Menu, PhotoImage, StringVar, Tk, Toplevel, filedialog, ttk
+from tkinter import IntVar, Label, Listbox, Menu, PhotoImage, StringVar, Tk, Toplevel, filedialog, ttk
 
 # Outside packages
 from tksheet import Sheet
@@ -835,7 +835,6 @@ class inputSheetClass:
             return None  # This operation only applies to input display mode
 
         pad = c.GLOBAL_PADDING
-        maxElementsPerRow = 10
 
         # Make a new window
         self.columnSelectionWindowRoot = Toplevel(self.mainWindowObj.root)
@@ -848,61 +847,53 @@ class inputSheetClass:
             anchor="w",
             justify="left",
         )
-        instructionsLabel.grid(
-            row=0,
-            column=0,
-            padx=pad,
-            pady=pad,
-            columnspan=maxElementsPerRow,
-            sticky="w",
+        instructionsLabel.pack(side="top", fill="none", padx=pad, pady=pad)
+
+        self.columnSelectionListBox = Listbox(
+            self.columnSelectionWindowRoot,
+            selectmode="multiple",
+            height=min(40, len(c.VK_NAMES) - len(self.inputColumnsList)),
         )
+        self.columnSelectionListBox.pack(side="left", fill="both", padx=pad, pady=pad)
 
-        self.checkButtons = []
-        self.checkButtonVars = []
-        thisRow = 1
-        elementsInRow = 0
+        self.columnSelectionScrollbar = ttk.Scrollbar(self.columnSelectionWindowRoot)
+        self.columnSelectionScrollbar.pack(side="left", fill="both", padx=pad, pady=pad)
 
+        # Put values into listbox
         for value in c.VK_NAMES.values():
             if value not in self.inputColumnsList and value != "":
-                # Create a check button for this column
-                self.checkButtonVars += [StringVar(value="")]
-                self.checkButtons += [
-                    ttk.Checkbutton(
-                        self.columnSelectionWindowRoot,
-                        text=value,
-                        variable=self.checkButtonVars[-1],
-                        offvalue="",
-                        onvalue=value,
-                    )
-                ]
-                self.checkButtons[-1].grid(row=thisRow, column=elementsInRow, padx=pad, pady=pad, sticky="w")
-                elementsInRow += 1
-                if elementsInRow >= maxElementsPerRow:
-                    thisRow += 1
-                    elementsInRow = 0
+                self.columnSelectionListBox.insert("end", value)
+
+        # Config listbox
+        self.columnSelectionListBox.config(yscrollcommand=self.columnSelectionScrollbar.set)
+
+        # Config scrollbar
+        self.columnSelectionScrollbar.config(command=self.columnSelectionListBox.yview)
 
         columnSelectionOkButton = ttk.Button(
             self.columnSelectionWindowRoot,
             text=c.OK_STRING,
             command=self.closeColumnSelector,
         )
-        columnSelectionOkButton.grid(row=thisRow + 2, column=0, padx=pad, pady=pad, columnspan=maxElementsPerRow)
+        columnSelectionOkButton.pack(side="bottom", fill="none", padx=pad, pady=pad)
 
         # Now cancel the user-initiated column addition
         return None
 
     def closeColumnSelector(self):
-        print(
-            c.ADDING_COLUMNS_STRING
-            + "".join(thisVar.get() + ", " for thisVar in self.checkButtonVars if thisVar.get() != "")[:-2]
-        )
+        selectedIndices = self.columnSelectionListBox.curselection()
+        selectedItems = []
+
+        for index in selectedIndices:
+            selectedItems.append(self.columnSelectionListBox.get(index))
+
+        print(c.ADDING_COLUMNS_STRING + "".join(thisStr + ", " for thisStr in selectedItems)[:-2])
         # Take the selected columns and add them to the input editor
-        newStrList = []
-        for var in self.checkButtonVars:
-            if (thisStr := var.get()) != "":
-                # Add this column
-                newStrList += [keyCodes(thisStr)]
-                self.keyCodesList += [keyCodes(thisStr)]
+        newCodesList = []
+        for string in selectedItems:
+            # Add this column
+            newCodesList += [keyCodes(string)]
+            self.keyCodesList += [keyCodes(string)]
 
         # Exit the column selection window
         self.columnSelectionWindowRoot.destroy()
@@ -912,8 +903,8 @@ class inputSheetClass:
 
         # Record the added columns
         addedColumnIndices = []
-        for thisStr in newStrList:
-            addedColumnIndices += [self.keyCodesList.index(thisStr)]
+        for thisCode in newCodesList:
+            addedColumnIndices += [self.keyCodesList.index(thisCode)]
 
         inputKeynameColumnLabels = [""] * len(self.keyCodesList)
 
