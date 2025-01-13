@@ -29,7 +29,7 @@ class FileHistory:
 
     @staticmethod
     def defaultConfig():
-        return FileHistory(game_exe=[], data_win=[], movie=[], maxhistoryentries="10")
+        return FileHistory(game_exe=[""], data_win=[""], movie=[""], maxhistoryentries="10")
 
 
 @dataclass

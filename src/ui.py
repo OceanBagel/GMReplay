@@ -687,6 +687,7 @@ class inputSheetClass:
         self.lastClickR = -1
         self.lastClickC = -1
         self.dragged = False
+        self.movieFilePath = ""
 
         pad = c.GLOBAL_PADDING
 
