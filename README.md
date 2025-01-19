@@ -7,9 +7,12 @@ GMReplay is a program for creating tool-assisted replays of Windows GameMaker ga
 
 GMReplay relies on the built-in playback and recording features present in GameMaker games for frame-accurate input playback regardless of the Windows timing inaccuracies that otherwise cause difficulty with building conventional TAS tools for Windows games.
 
-GMReplay is currently in development. See the below roadmap for future plans.
+Discord server: https://discord.gg/9HVmZSK9Ua
 
 ## Roadmap
+
+GMReplay is currently in development. See the below roadmap for future plans.
+
 **Phase 1 - Minimum implementation (Complete)**
 - [X] Realtime recording and playback
 - [X] Interactive command-line interface
@@ -88,7 +91,11 @@ You can select either Recording or Playback, and then press Start to open the ga
 
 The .gmr file automatically saves while the game's running in recording mode. To end recording, close the game or press the "Stop" button.
 
-Once the .gmr movie file contains inputs, the inputs will be displayed in the GUI. From there, you can make edits by clicking individual cells, clicking and dragging to paint cells, or shift-clicking to paint a region of cells. You can add or delete rows by right clicking the row labels, and you can add columns by right clicking the column labels.
+Once the .gmr movie file contains inputs, the inputs will be displayed in the GUI. 
+
+Note: If the game used to generate the movie is 64-bit, make sure to check "64-bit movie file format" in File -> Preferences. If the game is 32-bit, make sure to uncheck this setting.
+
+From there, you can make edits by clicking individual cells, clicking and dragging to paint cells, or shift-clicking to paint a region of cells. You can add or delete rows by right clicking the row labels, and you can add columns by right clicking the column labels.
 
 The movie file is saved automatically when you start playback. To save manually, go to "File" and then either "Save movie" or "Save movie as...".
 
