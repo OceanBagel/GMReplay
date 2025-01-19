@@ -421,6 +421,9 @@ def inputsToRecording(inputColumnsList, keyCodesList, inputFormatMovieData):
                 if button not in buttonDown:
                     buttonReleased[0] += [button]
 
+        prevButtonDown = buttonDown.copy()
+        prevKeyDown = keyDown.copy()
+
         # lastKey/button and currentkey/button
         if len(keyPressed) > 0:
             # Check if the last key isn't a button

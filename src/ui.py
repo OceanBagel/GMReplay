@@ -231,7 +231,7 @@ class mainWindowClass:
             onvalue="64",
             command=self.bitnessUpdate,
         )
-        bitnessCheckbutton.grid(row=2, column=0, padx=pad, pady=pad)
+        bitnessCheckbutton.grid(row=1, column=1, padx=pad, pady=pad)
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)

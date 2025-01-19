@@ -10,7 +10,7 @@ APPDATA_PATH = path.join(getenv("APPDATA", ""), "GMReplay")
 # Strings
 
 # Main program strings
-VERSION_NUMBER = "v0.1.7"
+VERSION_NUMBER = "v0.1.8"
 STARTUP_STRING = "GMReplay " + VERSION_NUMBER + " by OceanBagel\n"
 MIN_PYTHON_STRING = f"Python {MIN_PYTHON[0]}.{MIN_PYTHON[1]} or later is required.\n"
 LICENSE_HEADER = (
