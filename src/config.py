@@ -14,10 +14,11 @@ import constants as c
 @dataclass
 class General:
     suppress_game_debug_output: str = "False"
+    movie_file_bitness: str = "32"
 
     @staticmethod
     def defaultConfig():
-        return General(suppress_game_debug_output="False")
+        return General(suppress_game_debug_output="False", movie_file_bitness="32")
 
 
 @dataclass

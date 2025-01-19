@@ -29,6 +29,7 @@ CONFIG_PATH = path.join(APPDATA_PATH, CONFIG_FILENAME)
 PATCH_FILE_NAME = "__temp_GMR_patched_runner.exe"
 PATCH_START_STRING = "Patching mouse inputs..."
 PATCH_MOUSE_FAIL_STRING = "WARNING: Patching encountered an issue. Mouse inputs will not work."
+MOUSE_OFFSET_MISMATCH = "Mouse offset mismatch. Possible issues with mouse inputs."
 PATCH_MOUSE_SUCCESS_STRING = "Mouse inputs patched successfully."
 PATCH_KEYDIRECT_STRING = "Patching keyboard_check_direct()..."
 PATCH_KEYDIRECT_FAIL_STRING = "WARNING: Patching encountered an issue. Direct keyboard input will not work."
@@ -36,7 +37,7 @@ PATCH_KEYDIRECT_SUCCESS_STRING = "keyboard_check_direct() patched successfully."
 PATCH_RANDOMIZE_STRING = "Patching randomize()..."
 PATCH_RANDOMIZE_FAIL_STRING = "WARNING: Patching encountered an issue. Randomness will not be deterministic."
 PATCH_RANDOMIZE_SUCCESS_STRING = "randomize() patched successfully."
-PATCH_SUCCESS_STRING = "Runner patched successfully."
+PATCH_SUCCESS_STRING = "Runner patching completed."
 
 # UI strings
 WINDOW_TITLE = "GMReplay " + VERSION_NUMBER
@@ -90,6 +91,7 @@ PREFERENCES_STRING = "Preferences"
 MAX_HISTORY_STRING = "Maximum file history size:"
 CLEAR_HISTORY_STRING = "Clear file history"
 SUPPRESS_GAME_OUTPUT_STRING = "Suppress game debug output"
+BITNESS_STRING = "64-bit movie file format"
 ABOUT_MESSAGE = (
     "GMReplay is a program for creating tool-assisted replays of Windows-based GameMaker games from GameMaker: Studio 1 or later.\n\n"
     + "To submit an issue, receive the most up-to-date versions, or contribute to the development of GMReplay, visit the Github repository at:"
@@ -112,6 +114,9 @@ INVALID_INPUT_STRING = "Invalid input. This cell accepts integer inputs only."
 # Config strings
 CONFIG_DATA_ERROR_STRING = "Error when loading config.ini: data error. Reloading default configuration."
 CONFIG_FILE_NOT_FOUND_STRING = "Error when loading config.ini: file not found. Reloading default configuration."
+
+# Utils strings
+NOT_AN_EXE_ERROR = "Error: could not determine bitness of exe file. Is it a Windows executable?"
 
 # Other constants
 

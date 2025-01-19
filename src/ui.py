@@ -99,7 +99,9 @@ class mainWindowClass:
 
         # Raw input display. Useful for debugging, but not meant for end users.
         # TODO: Allow enabling this through config
-        # self.inputRawRadioButtonObj = inputRawRadioButtons(self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self)
+        # self.inputRawRadioButtonObj = inputRawRadioButtons(
+        #     self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self
+        # )
 
         # Menu bar
         self.menuBar = Menu(self.root)
@@ -183,6 +185,10 @@ class mainWindowClass:
         self.config.General.suppress_game_debug_output = self.suppressGameOutputCheckbuttonVar.get()
         configSave(self.config, c.CONFIG_PATH)
 
+    def bitnessUpdate(self):
+        self.config.General.movie_file_bitness = self.bitnessCheckbuttonVar.get()
+        configSave(self.config, c.CONFIG_PATH)
+
     def preferencesWindow(self):
         prefWindowRoot = Toplevel(self.root)
         prefWindowRoot.title(c.PREFERENCES_WINDOW_TITLE)
@@ -215,6 +221,17 @@ class mainWindowClass:
             command=self.suppressGameOutputUpdate,
         )
         suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad)
+
+        self.bitnessCheckbuttonVar = StringVar(value=self.config.General.movie_file_bitness)
+        bitnessCheckbutton = ttk.Checkbutton(
+            prefWindowRoot,
+            text=c.BITNESS_STRING,
+            variable=self.bitnessCheckbuttonVar,
+            offvalue="32",
+            onvalue="64",
+            command=self.bitnessUpdate,
+        )
+        bitnessCheckbutton.grid(row=2, column=0, padx=pad, pady=pad)
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)
@@ -754,7 +771,9 @@ class inputSheetClass:
         if self.movieFilePath != "":
             print(c.LOADING_MOVIE_STRING)
             # Parse the inpts
-            self.loadedMovieData = loadMovie(self.movieFilePath)
+            self.loadedMovieData = loadMovie(
+                self.movieFilePath, int(self.mainWindowObj.config.General.movie_file_bitness)
+            )
             # Takes the loaded inputs, rotates them (rows become columns and vice versa), applies a recursive bitwise or
             # operation to determine which columns have nonzero values, then uses compress to condense the default columns list into the displayed columns list
             self.rawBoolMask = reduceBitwiseOr(rotate2DArray(self.loadedMovieData))
@@ -791,7 +810,9 @@ class inputSheetClass:
                 )
 
             # Otherwise the loaded movie data should have already been updated
-            saveMovie(self.movieFilePath, self.loadedMovieData)
+            saveMovie(
+                self.movieFilePath, self.loadedMovieData, int(self.mainWindowObj.config.General.movie_file_bitness)
+            )
 
             print(c.SAVED_MOVIE_STRING)
 
