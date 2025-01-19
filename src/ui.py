@@ -2,7 +2,7 @@
 import subprocess
 from itertools import compress
 from os import getcwd, path, set_blocking
-from tkinter import IntVar, Label, Menu, PhotoImage, StringVar, Tk, Toplevel, filedialog, ttk
+from tkinter import IntVar, Label, Listbox, Menu, PhotoImage, StringVar, Tk, Toplevel, filedialog, ttk
 
 # Outside packages
 from tksheet import Sheet
@@ -99,7 +99,9 @@ class mainWindowClass:
 
         # Raw input display. Useful for debugging, but not meant for end users.
         # TODO: Allow enabling this through config
-        # self.inputRawRadioButtonObj = inputRawRadioButtons(self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self)
+        # self.inputRawRadioButtonObj = inputRawRadioButtons(
+        #     self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self
+        # )
 
         # Menu bar
         self.menuBar = Menu(self.root)
@@ -183,6 +185,10 @@ class mainWindowClass:
         self.config.General.suppress_game_debug_output = self.suppressGameOutputCheckbuttonVar.get()
         configSave(self.config, c.CONFIG_PATH)
 
+    def bitnessUpdate(self):
+        self.config.General.movie_file_bitness = self.bitnessCheckbuttonVar.get()
+        configSave(self.config, c.CONFIG_PATH)
+
     def preferencesWindow(self):
         prefWindowRoot = Toplevel(self.root)
         prefWindowRoot.title(c.PREFERENCES_WINDOW_TITLE)
@@ -215,6 +221,17 @@ class mainWindowClass:
             command=self.suppressGameOutputUpdate,
         )
         suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad)
+
+        self.bitnessCheckbuttonVar = StringVar(value=self.config.General.movie_file_bitness)
+        bitnessCheckbutton = ttk.Checkbutton(
+            prefWindowRoot,
+            text=c.BITNESS_STRING,
+            variable=self.bitnessCheckbuttonVar,
+            offvalue="32",
+            onvalue="64",
+            command=self.bitnessUpdate,
+        )
+        bitnessCheckbutton.grid(row=2, column=0, padx=pad, pady=pad)
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)
@@ -687,6 +704,7 @@ class inputSheetClass:
         self.lastClickR = -1
         self.lastClickC = -1
         self.dragged = False
+        self.movieFilePath = ""
 
         pad = c.GLOBAL_PADDING
 
@@ -753,7 +771,9 @@ class inputSheetClass:
         if self.movieFilePath != "":
             print(c.LOADING_MOVIE_STRING)
             # Parse the inpts
-            self.loadedMovieData = loadMovie(self.movieFilePath)
+            self.loadedMovieData = loadMovie(
+                self.movieFilePath, int(self.mainWindowObj.config.General.movie_file_bitness)
+            )
             # Takes the loaded inputs, rotates them (rows become columns and vice versa), applies a recursive bitwise or
             # operation to determine which columns have nonzero values, then uses compress to condense the default columns list into the displayed columns list
             self.rawBoolMask = reduceBitwiseOr(rotate2DArray(self.loadedMovieData))
@@ -790,7 +810,9 @@ class inputSheetClass:
                 )
 
             # Otherwise the loaded movie data should have already been updated
-            saveMovie(self.movieFilePath, self.loadedMovieData)
+            saveMovie(
+                self.movieFilePath, self.loadedMovieData, int(self.mainWindowObj.config.General.movie_file_bitness)
+            )
 
             print(c.SAVED_MOVIE_STRING)
 
@@ -835,7 +857,6 @@ class inputSheetClass:
             return None  # This operation only applies to input display mode
 
         pad = c.GLOBAL_PADDING
-        maxElementsPerRow = 10
 
         # Make a new window
         self.columnSelectionWindowRoot = Toplevel(self.mainWindowObj.root)
@@ -848,61 +869,53 @@ class inputSheetClass:
             anchor="w",
             justify="left",
         )
-        instructionsLabel.grid(
-            row=0,
-            column=0,
-            padx=pad,
-            pady=pad,
-            columnspan=maxElementsPerRow,
-            sticky="w",
+        instructionsLabel.pack(side="top", fill="none", padx=pad, pady=pad)
+
+        self.columnSelectionListBox = Listbox(
+            self.columnSelectionWindowRoot,
+            selectmode="multiple",
+            height=min(40, len(c.VK_NAMES) - len(self.inputColumnsList)),
         )
+        self.columnSelectionListBox.pack(side="left", fill="both", padx=pad, pady=pad)
 
-        self.checkButtons = []
-        self.checkButtonVars = []
-        thisRow = 1
-        elementsInRow = 0
+        self.columnSelectionScrollbar = ttk.Scrollbar(self.columnSelectionWindowRoot)
+        self.columnSelectionScrollbar.pack(side="left", fill="both", padx=pad, pady=pad)
 
+        # Put values into listbox
         for value in c.VK_NAMES.values():
             if value not in self.inputColumnsList and value != "":
-                # Create a check button for this column
-                self.checkButtonVars += [StringVar(value="")]
-                self.checkButtons += [
-                    ttk.Checkbutton(
-                        self.columnSelectionWindowRoot,
-                        text=value,
-                        variable=self.checkButtonVars[-1],
-                        offvalue="",
-                        onvalue=value,
-                    )
-                ]
-                self.checkButtons[-1].grid(row=thisRow, column=elementsInRow, padx=pad, pady=pad, sticky="w")
-                elementsInRow += 1
-                if elementsInRow >= maxElementsPerRow:
-                    thisRow += 1
-                    elementsInRow = 0
+                self.columnSelectionListBox.insert("end", value)
+
+        # Config listbox
+        self.columnSelectionListBox.config(yscrollcommand=self.columnSelectionScrollbar.set)
+
+        # Config scrollbar
+        self.columnSelectionScrollbar.config(command=self.columnSelectionListBox.yview)
 
         columnSelectionOkButton = ttk.Button(
             self.columnSelectionWindowRoot,
             text=c.OK_STRING,
             command=self.closeColumnSelector,
         )
-        columnSelectionOkButton.grid(row=thisRow + 2, column=0, padx=pad, pady=pad, columnspan=maxElementsPerRow)
+        columnSelectionOkButton.pack(side="bottom", fill="none", padx=pad, pady=pad)
 
         # Now cancel the user-initiated column addition
         return None
 
     def closeColumnSelector(self):
-        print(
-            c.ADDING_COLUMNS_STRING
-            + "".join(thisVar.get() + ", " for thisVar in self.checkButtonVars if thisVar.get() != "")[:-2]
-        )
+        selectedIndices = self.columnSelectionListBox.curselection()
+        selectedItems = []
+
+        for index in selectedIndices:
+            selectedItems.append(self.columnSelectionListBox.get(index))
+
+        print(c.ADDING_COLUMNS_STRING + "".join(thisStr + ", " for thisStr in selectedItems)[:-2])
         # Take the selected columns and add them to the input editor
-        newStrList = []
-        for var in self.checkButtonVars:
-            if (thisStr := var.get()) != "":
-                # Add this column
-                newStrList += [keyCodes(thisStr)]
-                self.keyCodesList += [keyCodes(thisStr)]
+        newCodesList = []
+        for string in selectedItems:
+            # Add this column
+            newCodesList += [keyCodes(string)]
+            self.keyCodesList += [keyCodes(string)]
 
         # Exit the column selection window
         self.columnSelectionWindowRoot.destroy()
@@ -912,8 +925,8 @@ class inputSheetClass:
 
         # Record the added columns
         addedColumnIndices = []
-        for thisStr in newStrList:
-            addedColumnIndices += [self.keyCodesList.index(thisStr)]
+        for thisCode in newCodesList:
+            addedColumnIndices += [self.keyCodesList.index(thisCode)]
 
         inputKeynameColumnLabels = [""] * len(self.keyCodesList)
 

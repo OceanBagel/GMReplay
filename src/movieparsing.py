@@ -8,7 +8,7 @@ import constants as c
 from utils import keyName, listIndicesThatAreTrue
 
 
-def loadMovie(pathToMovieFile):
+def loadMovie(pathToMovieFile, bitness=32):
     """
     Take a path to the movie file, return a list of frames, each frame containing a list of inputs
 
@@ -34,106 +34,209 @@ def loadMovie(pathToMovieFile):
 
             # Catch any decoding errors, discard that frame's data, and break
             try:
-                # Start parsing, should be a total of 3034 bytes of data
-                lastChar = fid.read(2)
-                lastChar = lastChar.decode("utf-16")
+                if bitness == 32:
+                    # Start parsing, should be a total of 3034 bytes of data
+                    lastChar = fid.read(2)
+                    lastChar = lastChar.decode("utf-16")
 
-                inputString = ""
-                for _ in range(1025):
-                    inputString += fid.read(2).decode("utf-16")
-                inputString.strip("\x00")
+                    inputString = ""
+                    for _ in range(1025):
+                        inputString += fid.read(2).decode("utf-16")
+                    inputString.strip("\x00")
 
-                lastKey = int.from_bytes(fid.read(4), "little")
+                    lastKey = int.from_bytes(fid.read(4), "little")
 
-                currentKey = int.from_bytes(fid.read(4), "little")
+                    currentKey = int.from_bytes(fid.read(4), "little")
 
-                keyDown = [False] * 256
-                for i in range(256):
-                    keyDown[i] = int.from_bytes(fid.read(1)) != 0
-                keyDown = listIndicesThatAreTrue(keyDown)
-                # This lists all indices where the corresponding elements are true
+                    keyDown = [False] * 256
+                    for i in range(256):
+                        keyDown[i] = int.from_bytes(fid.read(1)) != 0
+                    keyDown = listIndicesThatAreTrue(keyDown)
+                    # This lists all indices where the corresponding elements are true
 
-                keyReleased = [False] * 256
-                for i in range(256):
-                    keyReleased[i] = int.from_bytes(fid.read(1)) != 0
-                keyReleased = listIndicesThatAreTrue(keyReleased)
+                    keyReleased = [False] * 256
+                    for i in range(256):
+                        keyReleased[i] = int.from_bytes(fid.read(1)) != 0
+                    keyReleased = listIndicesThatAreTrue(keyReleased)
 
-                keyPressed = [False] * 256
-                for i in range(256):
-                    keyPressed[i] = int.from_bytes(fid.read(1)) != 0
-                keyPressed = listIndicesThatAreTrue(keyPressed)
+                    keyPressed = [False] * 256
+                    for i in range(256):
+                        keyPressed[i] = int.from_bytes(fid.read(1)) != 0
+                    keyPressed = listIndicesThatAreTrue(keyPressed)
 
-                lastButton = [0] * 10
-                for i in range(10):
-                    lastButton[i] = int.from_bytes(fid.read(4), "little")
-                # It seems that only the first slot is used
+                    lastButton = [0] * 10
+                    for i in range(10):
+                        lastButton[i] = int.from_bytes(fid.read(4), "little")
+                    # It seems that only the first slot is used
 
-                currentButton = [0] * 10
-                for i in range(10):
-                    currentButton[i] = int.from_bytes(fid.read(4), "little")
-                # It seems that only the first slot is used
+                    currentButton = [0] * 10
+                    for i in range(10):
+                        currentButton[i] = int.from_bytes(fid.read(4), "little")
+                    # It seems that only the first slot is used
 
-                buttonDown = [[0 for i in range(3)] for j in range(10)]
-                for i in range(10):
-                    for j in range(3):
-                        buttonDown[i][j] = int.from_bytes(fid.read(1)) != 0
-                    buttonDown[i] = [element + 1 for element in listIndicesThatAreTrue(buttonDown[i])]
-                    # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
-                # It seems that only the first slot is used
+                    buttonDown = [[0 for i in range(3)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(3):
+                            buttonDown[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonDown[i] = [element + 1 for element in listIndicesThatAreTrue(buttonDown[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
 
-                buttonReleased = [[0 for i in range(3)] for j in range(10)]
-                for i in range(10):
-                    for j in range(3):
-                        buttonReleased[i][j] = int.from_bytes(fid.read(1)) != 0
-                    buttonReleased[i] = [element + 1 for element in listIndicesThatAreTrue(buttonReleased[i])]
-                    # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
-                # It seems that only the first slot is used
+                    buttonReleased = [[0 for i in range(3)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(3):
+                            buttonReleased[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonReleased[i] = [element + 1 for element in listIndicesThatAreTrue(buttonReleased[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
 
-                buttonPressed = [[0 for i in range(3)] for j in range(10)]
-                for i in range(10):
-                    for j in range(3):
-                        buttonPressed[i][j] = int.from_bytes(fid.read(1)) != 0
-                    buttonPressed[i] = [element + 1 for element in listIndicesThatAreTrue(buttonPressed[i])]
-                    # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
-                # It seems that only the first slot is used
+                    buttonPressed = [[0 for i in range(3)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(3):
+                            buttonPressed[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonPressed[i] = [element + 1 for element in listIndicesThatAreTrue(buttonPressed[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
 
-                wheelUp = [0] * 10
-                for i in range(10):
-                    wheelUp[i] = int.from_bytes(fid.read(1))
-                # It seems that only the first slot is used
+                    wheelUp = [0] * 10
+                    for i in range(10):
+                        wheelUp[i] = int.from_bytes(fid.read(1))
+                    # It seems that only the first slot is used
 
-                wheelDown = [0] * 10
-                for i in range(10):
-                    wheelDown[i] = int.from_bytes(fid.read(1))
-                # It seems that only the first slot is used
+                    wheelDown = [0] * 10
+                    for i in range(10):
+                        wheelDown[i] = int.from_bytes(fid.read(1))
+                    # It seems that only the first slot is used
 
-                mousePos = fid.read(8).hex()  # TODO: is this data actually used? GUI mouse position?
+                    mousePos = fid.read(8).hex()  # TODO: is this data actually used? GUI mouse position?
 
-                mouseX = int.from_bytes(fid.read(4), "little")
+                    mouseX = int.from_bytes(fid.read(4), "little")
 
-                mouseY = int.from_bytes(fid.read(4), "little")
+                    mouseY = int.from_bytes(fid.read(4), "little")
 
-                thisFrameData = [
-                    lastChar,
-                    inputString,
-                    lastKey,
-                    currentKey,
-                    keyDown,
-                    keyReleased,
-                    keyPressed,
-                    lastButton,
-                    currentButton,
-                    buttonDown,
-                    buttonReleased,
-                    buttonPressed,
-                    wheelUp,
-                    wheelDown,
-                    mousePos,
-                    mouseX,
-                    mouseY,
-                ]
+                    thisFrameData = [
+                        lastChar,
+                        inputString,
+                        lastKey,
+                        currentKey,
+                        keyDown,
+                        keyReleased,
+                        keyPressed,
+                        lastButton,
+                        currentButton,
+                        buttonDown,
+                        buttonReleased,
+                        buttonPressed,
+                        wheelUp,
+                        wheelDown,
+                        mousePos,
+                        mouseX,
+                        mouseY,
+                    ]
 
-                loadedMovieData += [thisFrameData]
+                    loadedMovieData += [thisFrameData]
+
+                elif bitness == 64:
+                    # Start parsing, should be a total of 5146 bytes of data
+                    lastChar = fid.read(4)
+                    lastChar = lastChar.decode("utf-32")
+
+                    inputString = ""
+                    for _ in range(1025):
+                        inputString += fid.read(4).decode("utf-32")
+                    inputString.strip("\x00")
+
+                    lastKey = int.from_bytes(fid.read(4), "little")
+
+                    currentKey = int.from_bytes(fid.read(4), "little")
+
+                    keyDown = [False] * 256
+                    for i in range(256):
+                        keyDown[i] = int.from_bytes(fid.read(1)) != 0
+                    keyDown = listIndicesThatAreTrue(keyDown)
+                    # This lists all indices where the corresponding elements are true
+
+                    keyReleased = [False] * 256
+                    for i in range(256):
+                        keyReleased[i] = int.from_bytes(fid.read(1)) != 0
+                    keyReleased = listIndicesThatAreTrue(keyReleased)
+
+                    keyPressed = [False] * 256
+                    for i in range(256):
+                        keyPressed[i] = int.from_bytes(fid.read(1)) != 0
+                    keyPressed = listIndicesThatAreTrue(keyPressed)
+
+                    lastButton = [0] * 10
+                    for i in range(10):
+                        lastButton[i] = int.from_bytes(fid.read(4), "little")
+                    # It seems that only the first slot is used
+
+                    currentButton = [0] * 10
+                    for i in range(10):
+                        currentButton[i] = int.from_bytes(fid.read(4), "little")
+                    # It seems that only the first slot is used
+
+                    buttonDown = [[0 for i in range(5)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(5):
+                            buttonDown[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonDown[i] = [element + 1 for element in listIndicesThatAreTrue(buttonDown[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
+
+                    buttonReleased = [[0 for i in range(5)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(5):
+                            buttonReleased[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonReleased[i] = [element + 1 for element in listIndicesThatAreTrue(buttonReleased[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
+
+                    buttonPressed = [[0 for i in range(5)] for j in range(10)]
+                    for i in range(10):
+                        for j in range(5):
+                            buttonPressed[i][j] = int.from_bytes(fid.read(1)) != 0
+                        buttonPressed[i] = [element + 1 for element in listIndicesThatAreTrue(buttonPressed[i])]
+                        # Add 1 to get to the mouse button. Needs to be subtracted back when decoding.
+                    # It seems that only the first slot is used
+
+                    wheelUp = [0] * 10
+                    for i in range(10):
+                        wheelUp[i] = int.from_bytes(fid.read(1))
+                    # It seems that only the first slot is used
+
+                    wheelDown = [0] * 10
+                    for i in range(10):
+                        wheelDown[i] = int.from_bytes(fid.read(1))
+                    # It seems that only the first slot is used
+
+                    mousePos = fid.read(8).hex()  # TODO: is this data actually used? GUI mouse position?
+
+                    mouseX = int.from_bytes(fid.read(4), "little")
+
+                    mouseY = int.from_bytes(fid.read(4), "little")
+
+                    thisFrameData = [
+                        lastChar,
+                        inputString,
+                        lastKey,
+                        currentKey,
+                        keyDown,
+                        keyReleased,
+                        keyPressed,
+                        lastButton,
+                        currentButton,
+                        buttonDown,
+                        buttonReleased,
+                        buttonPressed,
+                        wheelUp,
+                        wheelDown,
+                        mousePos,
+                        mouseX,
+                        mouseY,
+                    ]
+
+                    loadedMovieData += [thisFrameData]
 
             except UnicodeDecodeError:
                 print("Decode error. Final frame data was incomplete and has been discarded.")
@@ -421,7 +524,7 @@ def inputsToRecording(inputColumnsList, keyCodesList, inputFormatMovieData):
     return loadedMovieData
 
 
-def saveMovie(pathToMovieFile, loadedMovieData):
+def saveMovie(pathToMovieFile, loadedMovieData, bitness=32):
     """
     Take a path to the movie file and the loaded data from loadMovie(), and save the data into the movie file, overwriting the file
 
@@ -431,140 +534,279 @@ def saveMovie(pathToMovieFile, loadedMovieData):
     """
 
     # First open the file for binary writing
-    with open(pathToMovieFile, "wb") as fid:
-        # Now iterate over each frame
-        for frame in loadedMovieData:
-            frameBytes = b""
+    if bitness == 32:
+        with open(pathToMovieFile, "wb") as fid:
+            # Now iterate over each frame
+            for frame in loadedMovieData:
+                frameBytes = b""
 
-            # Start converting from loaded format to bytes
-            # lastChar
-            size = 2
-            bytesToAdd = frame[0].encode("utf-16le")  # 2 bytes
-            if len(bytesToAdd) > size:
-                print(c.TRUNCATED_DATA_STRING)
-                bytesToAdd = bytesToAdd[:size]
-            if len(bytesToAdd) < size:
-                bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
-            frameBytes += bytesToAdd
-
-            # inputString
-            size = 2050
-            # 1025*2 because each char is 2 bytes
-            bytesToAdd = frame[1].encode("utf-16le")
-            # Max 2050 bytes
-            if len(bytesToAdd) > size:
-                print(c.TRUNCATED_DATA_STRING)
-                bytesToAdd = bytesToAdd[:size]
-            if len(bytesToAdd) < size:
-                bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
-            frameBytes += bytesToAdd
-
-            # lastKey
-            size = 4
-            bytesToAdd = frame[2].to_bytes(size, "little")
-            frameBytes += bytesToAdd
-
-            # currentKey
-            size = 4
-            bytesToAdd = frame[3].to_bytes(size, "little")
-            frameBytes += bytesToAdd
-
-            # keyDown
-            bytesToAdd = bytearray(256)
-            for element in frame[4]:
-                bytesToAdd[element] = 1
-                # Sets to b'\x01'
-            bytesToAdd = bytes(bytesToAdd)
-            frameBytes += bytesToAdd
-
-            # keyReleased
-            bytesToAdd = bytearray(256)
-            for element in frame[5]:
-                bytesToAdd[element] = 1
-                # Sets to b'\x01'
-            bytesToAdd = bytes(bytesToAdd)
-            frameBytes += bytesToAdd
-
-            # keyPressed
-            bytesToAdd = bytearray(256)
-            for element in frame[6]:
-                bytesToAdd[element] = 1
-                # Sets to b'\x01'
-            bytesToAdd = bytes(bytesToAdd)
-            frameBytes += bytesToAdd
-
-            # lastButton
-            size = 4
-            for element in frame[7]:
-                # always 10 elements
-                bytesToAdd = (element).to_bytes(size, "little")
+                # Start converting from loaded format to bytes
+                # lastChar
+                size = 2
+                bytesToAdd = frame[0].encode("utf-16le")  # 2 bytes
+                if len(bytesToAdd) > size:
+                    print(c.TRUNCATED_DATA_STRING)
+                    bytesToAdd = bytesToAdd[:size]
+                if len(bytesToAdd) < size:
+                    bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
                 frameBytes += bytesToAdd
 
-            # currentButton
-            size = 4
-            for element in frame[8]:
-                # always 10 elements
-                bytesToAdd = (element).to_bytes(size, "little")
+                # inputString
+                size = 2050
+                # 1025*2 because each char is 2 bytes
+                bytesToAdd = frame[1].encode("utf-16le")
+                # Max 2050 bytes
+                if len(bytesToAdd) > size:
+                    print(c.TRUNCATED_DATA_STRING)
+                    bytesToAdd = bytesToAdd[:size]
+                if len(bytesToAdd) < size:
+                    bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
                 frameBytes += bytesToAdd
 
-            # buttonDown
-            for element in frame[9]:
-                # 10 elements
-                bytesToAdd = bytearray(3)
-                for subelement in element:
-                    bytesToAdd[subelement - 1] = 1
-                    # Sets to b'\x01', subtracted 1 because 1 was added before
+                # lastKey
+                size = 4
+                bytesToAdd = frame[2].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # currentKey
+                size = 4
+                bytesToAdd = frame[3].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # keyDown
+                bytesToAdd = bytearray(256)
+                for element in frame[4]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
                 bytesToAdd = bytes(bytesToAdd)
                 frameBytes += bytesToAdd
 
-            # buttonReleased
-            for element in frame[10]:
-                # 10 elements
-                bytesToAdd = bytearray(3)
-                for subelement in element:
-                    bytesToAdd[subelement - 1] = 1
-                    # Sets to b'\x01', subtracted 1 because 1 was added before
+                # keyReleased
+                bytesToAdd = bytearray(256)
+                for element in frame[5]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
                 bytesToAdd = bytes(bytesToAdd)
                 frameBytes += bytesToAdd
 
-            # buttonPressed
-            for element in frame[11]:
-                # 10 elements
-                bytesToAdd = bytearray(3)
-                for subelement in element:
-                    bytesToAdd[subelement - 1] = 1
-                    # Sets to b'\x01', subtracted 1 because 1 was added before
+                # keyPressed
+                bytesToAdd = bytearray(256)
+                for element in frame[6]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
                 bytesToAdd = bytes(bytesToAdd)
                 frameBytes += bytesToAdd
 
-            # wheelUp
-            size = 1
-            for element in frame[12]:
-                # always 10 elements
-                bytesToAdd = element.to_bytes(size, "little")
+                # lastButton
+                size = 4
+                for element in frame[7]:
+                    # always 10 elements
+                    bytesToAdd = (element).to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # currentButton
+                size = 4
+                for element in frame[8]:
+                    # always 10 elements
+                    bytesToAdd = (element).to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # buttonDown
+                for element in frame[9]:
+                    # 10 elements
+                    bytesToAdd = bytearray(3)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # buttonReleased
+                for element in frame[10]:
+                    # 10 elements
+                    bytesToAdd = bytearray(3)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # buttonPressed
+                for element in frame[11]:
+                    # 10 elements
+                    bytesToAdd = bytearray(3)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # wheelUp
+                size = 1
+                for element in frame[12]:
+                    # always 10 elements
+                    bytesToAdd = element.to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # wheelDown
+                size = 1
+                for element in frame[13]:
+                    # always 10 elements
+                    bytesToAdd = element.to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # mousePos
+                bytesToAdd = bytes.fromhex(frame[14])
+                # 8 bytes
                 frameBytes += bytesToAdd
 
-            # wheelDown
-            size = 1
-            for element in frame[13]:
-                # always 10 elements
-                bytesToAdd = element.to_bytes(size, "little")
+                # mouseX
+                size = 4
+                bytesToAdd = frame[15].to_bytes(size, "little")
                 frameBytes += bytesToAdd
 
-            # mousePos
-            bytesToAdd = bytes.fromhex(frame[14])
-            # 8 bytes
-            frameBytes += bytesToAdd
+                # mouseY
+                size = 4
+                bytesToAdd = frame[16].to_bytes(size, "little")
+                frameBytes += bytesToAdd
 
-            # mouseX
-            size = 4
-            bytesToAdd = frame[15].to_bytes(size, "little")
-            frameBytes += bytesToAdd
+                # Write this frame's bytes
+                fid.write(frameBytes)
+    else:  # bitness == 64
+        with open(pathToMovieFile, "wb") as fid:
+            # Now iterate over each frame
+            for frame in loadedMovieData:
+                frameBytes = b""
 
-            # mouseY
-            size = 4
-            bytesToAdd = frame[16].to_bytes(size, "little")
-            frameBytes += bytesToAdd
+                # Start converting from loaded format to bytes
+                # lastChar
+                size = 4
+                bytesToAdd = frame[0].encode("utf-32le")  # 2 bytes
+                if len(bytesToAdd) > size:
+                    print(c.TRUNCATED_DATA_STRING)
+                    bytesToAdd = bytesToAdd[:size]
+                if len(bytesToAdd) < size:
+                    bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
+                frameBytes += bytesToAdd
 
-            # Write this frame's bytes
-            fid.write(frameBytes)
+                # inputString
+                size = 4100
+                # 1025*4 because each char is 4 bytes
+                bytesToAdd = frame[1].encode("utf-32le")
+                # Max 4100 bytes
+                if len(bytesToAdd) > size:
+                    print(c.TRUNCATED_DATA_STRING)
+                    bytesToAdd = bytesToAdd[:size]
+                if len(bytesToAdd) < size:
+                    bytesToAdd = bytesToAdd + bytes(size - len(bytesToAdd))
+                frameBytes += bytesToAdd
+
+                # lastKey
+                size = 4
+                bytesToAdd = frame[2].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # currentKey
+                size = 4
+                bytesToAdd = frame[3].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # keyDown
+                bytesToAdd = bytearray(256)
+                for element in frame[4]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
+                bytesToAdd = bytes(bytesToAdd)
+                frameBytes += bytesToAdd
+
+                # keyReleased
+                bytesToAdd = bytearray(256)
+                for element in frame[5]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
+                bytesToAdd = bytes(bytesToAdd)
+                frameBytes += bytesToAdd
+
+                # keyPressed
+                bytesToAdd = bytearray(256)
+                for element in frame[6]:
+                    bytesToAdd[element] = 1
+                    # Sets to b'\x01'
+                bytesToAdd = bytes(bytesToAdd)
+                frameBytes += bytesToAdd
+
+                # lastButton
+                size = 4
+                for element in frame[7]:
+                    # always 10 elements
+                    bytesToAdd = (element).to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # currentButton
+                size = 4
+                for element in frame[8]:
+                    # always 10 elements
+                    bytesToAdd = (element).to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # buttonDown
+                for element in frame[9]:
+                    # 10 elements
+                    bytesToAdd = bytearray(5)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # buttonReleased
+                for element in frame[10]:
+                    # 10 elements
+                    bytesToAdd = bytearray(5)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # buttonPressed
+                for element in frame[11]:
+                    # 10 elements
+                    bytesToAdd = bytearray(5)
+                    for subelement in element:
+                        bytesToAdd[subelement - 1] = 1
+                        # Sets to b'\x01', subtracted 1 because 1 was added before
+                    bytesToAdd = bytes(bytesToAdd)
+                    frameBytes += bytesToAdd
+
+                # wheelUp
+                size = 1
+                for element in frame[12]:
+                    # always 10 elements
+                    bytesToAdd = element.to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # wheelDown
+                size = 1
+                for element in frame[13]:
+                    # always 10 elements
+                    bytesToAdd = element.to_bytes(size, "little")
+                    frameBytes += bytesToAdd
+
+                # mousePos
+                bytesToAdd = bytes.fromhex(frame[14])
+                # 8 bytes
+                frameBytes += bytesToAdd
+
+                # mouseX
+                size = 4
+                bytesToAdd = frame[15].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # mouseY
+                size = 4
+                bytesToAdd = frame[16].to_bytes(size, "little")
+                frameBytes += bytesToAdd
+
+                # Write this frame's bytes
+                fid.write(frameBytes)

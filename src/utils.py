@@ -166,3 +166,23 @@ def openURL(url):
         url (str): URL to open
     """
     webbrowser.open_new_tab(url)
+
+
+def check32BitOr64Bit(exeData):
+    """
+    Checks whether the exe file is 32-bit or 64-bit
+
+    Args:
+        exeData (bytes): Loaded binary data of the exe file
+
+    Returns:
+        int: 32 for 32-bit, 64 for 64-bit
+    """
+    if exeData.find(b"\x0b\x01", 0x0, 0x200) != -1:
+        return 32
+    elif exeData.find(b"\x0b\x02", 0x0, 0x200) != -1:
+        return 64
+    else:
+        # Could not detect (not an exe?)
+        print(c.NOT_AN_EXE_ERROR)
+        return 0
