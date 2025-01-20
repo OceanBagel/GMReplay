@@ -87,9 +87,10 @@ class mainWindowClass:
             self,
         )
 
-        # Debug button
-        # self.debugButton = ttk.Button(self.mainWindowFrame, text="Test", command=debugFunction)))
-        # self.debugButton.grid(column=11, row=3, padx=c.GLOBAL_PADDING, pady=c.GLOBAL_PADDING)
+        if self.config.Debug.show_debug_button == "True":
+            # Debug button
+            self.debugButton = ttk.Button(self.mainWindowFrame, text="Test", command=print("Test"))
+            self.debugButton.grid(column=11, row=3, padx=c.GLOBAL_PADDING, pady=c.GLOBAL_PADDING)
 
         # Create the input window
         self.inputWindowFrame = ttk.Frame(self.root)
@@ -97,11 +98,11 @@ class mainWindowClass:
 
         self.inputGridObj = inputSheetClass(self.inputWindowFrame, 0, 0, self)
 
-        # Raw input display. Useful for debugging, but not meant for end users.
-        # TODO: Allow enabling this through config
-        # self.inputRawRadioButtonObj = inputRawRadioButtons(
-        #     self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self
-        # )
+        if self.config.Debug.show_raw_input_selector == "True":
+            # Raw input display. Useful for debugging, but not meant for end users.
+            self.inputRawRadioButtonObj = inputRawRadioButtons(
+                self.mainWindowFrame, 3, 4, c.INPUTS_STRING, c.RAW_HIDE_STRING, c.RAW_SHOW_STRING, self
+            )
 
         # Menu bar
         self.menuBar = Menu(self.root)
@@ -188,6 +189,11 @@ class mainWindowClass:
     def bitnessUpdate(self):
         self.config.General.movie_file_bitness = self.bitnessCheckbuttonVar.get()
         configSave(self.config, c.CONFIG_PATH)
+        self.loadMovieInputs(self.movieFileRow.comboboxVar.get())
+
+    def showRawInputConfigUpdate(self):
+        self.config.Debug.show_raw_input_selector = self.showRawInputCheckbuttonVar.get()
+        configSave(self.config, c.CONFIG_PATH)
 
     def preferencesWindow(self):
         prefWindowRoot = Toplevel(self.root)
@@ -198,7 +204,7 @@ class mainWindowClass:
 
         # Organize these later. For now just make a hodgepodge of various config options
         maxHistoryLabel = Label(prefWindowRoot, text=c.MAX_HISTORY_STRING)
-        maxHistoryLabel.grid(row=0, column=0, padx=pad, pady=pad)
+        maxHistoryLabel.grid(row=0, column=0, padx=pad, pady=pad, sticky="e")
 
         self.maxHistorySpinboxVar = IntVar(value=self.config.File_History.maxhistoryentries)
         self.maxHistorySpinboxVar.trace_add("write", self.updateMaxHistory)
@@ -206,10 +212,10 @@ class mainWindowClass:
         maxHistorySpinbox = ttk.Spinbox(
             prefWindowRoot, width=5, from_=0, to=100, increment=1, textvariable=self.maxHistorySpinboxVar
         )
-        maxHistorySpinbox.grid(row=0, column=1, padx=pad, pady=pad)
+        maxHistorySpinbox.grid(row=0, column=1, padx=pad, pady=pad, sticky="w")
 
         clearHistoryButton = ttk.Button(prefWindowRoot, text=c.CLEAR_HISTORY_STRING, command=self.clearFileHistory)
-        clearHistoryButton.grid(row=0, column=2, padx=pad, pady=pad)
+        clearHistoryButton.grid(row=0, column=2, padx=pad, pady=pad, sticky="w")
 
         self.suppressGameOutputCheckbuttonVar = StringVar(value=self.config.General.suppress_game_debug_output)
         suppressGameOutputCheckbutton = ttk.Checkbutton(
@@ -220,7 +226,7 @@ class mainWindowClass:
             onvalue="True",
             command=self.suppressGameOutputUpdate,
         )
-        suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad)
+        suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad, sticky="w")
 
         self.bitnessCheckbuttonVar = StringVar(value=self.config.General.movie_file_bitness)
         bitnessCheckbutton = ttk.Checkbutton(
@@ -231,7 +237,18 @@ class mainWindowClass:
             onvalue="64",
             command=self.bitnessUpdate,
         )
-        bitnessCheckbutton.grid(row=2, column=0, padx=pad, pady=pad)
+        bitnessCheckbutton.grid(row=1, column=1, padx=pad, pady=pad, sticky="w")
+
+        self.showRawInputCheckbuttonVar = StringVar(value=self.config.Debug.show_raw_input_selector)
+        showRawInputCheckbutton = ttk.Checkbutton(
+            prefWindowRoot,
+            text=c.SHOW_RAW_INPUT_STRING,
+            variable=self.showRawInputCheckbuttonVar,
+            offvalue="False",
+            onvalue="True",
+            command=self.showRawInputConfigUpdate,
+        )
+        showRawInputCheckbutton.grid(row=2, column=0, padx=pad, pady=pad, columnspan=2, sticky="w")
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)
