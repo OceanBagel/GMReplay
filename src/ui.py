@@ -189,6 +189,7 @@ class mainWindowClass:
     def bitnessUpdate(self):
         self.config.General.movie_file_bitness = self.bitnessCheckbuttonVar.get()
         configSave(self.config, c.CONFIG_PATH)
+        self.loadMovieInputs(self.movieFileRow.comboboxVar.get())
 
     def showRawInputConfigUpdate(self):
         self.config.Debug.show_raw_input_selector = self.showRawInputCheckbuttonVar.get()
@@ -203,7 +204,7 @@ class mainWindowClass:
 
         # Organize these later. For now just make a hodgepodge of various config options
         maxHistoryLabel = Label(prefWindowRoot, text=c.MAX_HISTORY_STRING)
-        maxHistoryLabel.grid(row=0, column=0, padx=pad, pady=pad)
+        maxHistoryLabel.grid(row=0, column=0, padx=pad, pady=pad, sticky="e")
 
         self.maxHistorySpinboxVar = IntVar(value=self.config.File_History.maxhistoryentries)
         self.maxHistorySpinboxVar.trace_add("write", self.updateMaxHistory)
@@ -211,10 +212,10 @@ class mainWindowClass:
         maxHistorySpinbox = ttk.Spinbox(
             prefWindowRoot, width=5, from_=0, to=100, increment=1, textvariable=self.maxHistorySpinboxVar
         )
-        maxHistorySpinbox.grid(row=0, column=1, padx=pad, pady=pad)
+        maxHistorySpinbox.grid(row=0, column=1, padx=pad, pady=pad, sticky="w")
 
         clearHistoryButton = ttk.Button(prefWindowRoot, text=c.CLEAR_HISTORY_STRING, command=self.clearFileHistory)
-        clearHistoryButton.grid(row=0, column=2, padx=pad, pady=pad)
+        clearHistoryButton.grid(row=0, column=2, padx=pad, pady=pad, sticky="w")
 
         self.suppressGameOutputCheckbuttonVar = StringVar(value=self.config.General.suppress_game_debug_output)
         suppressGameOutputCheckbutton = ttk.Checkbutton(
@@ -225,7 +226,7 @@ class mainWindowClass:
             onvalue="True",
             command=self.suppressGameOutputUpdate,
         )
-        suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad)
+        suppressGameOutputCheckbutton.grid(row=1, column=0, padx=pad, pady=pad, sticky="w")
 
         self.bitnessCheckbuttonVar = StringVar(value=self.config.General.movie_file_bitness)
         bitnessCheckbutton = ttk.Checkbutton(
@@ -236,18 +237,18 @@ class mainWindowClass:
             onvalue="64",
             command=self.bitnessUpdate,
         )
-        bitnessCheckbutton.grid(row=1, column=1, padx=pad, pady=pad)
+        bitnessCheckbutton.grid(row=1, column=1, padx=pad, pady=pad, sticky="w")
 
         self.showRawInputCheckbuttonVar = StringVar(value=self.config.Debug.show_raw_input_selector)
-        bitnessCheckbutton = ttk.Checkbutton(
+        showRawInputCheckbutton = ttk.Checkbutton(
             prefWindowRoot,
             text=c.SHOW_RAW_INPUT_STRING,
             variable=self.showRawInputCheckbuttonVar,
             offvalue="False",
             onvalue="True",
-            command=self.showRawInputConfigUpdate
+            command=self.showRawInputConfigUpdate,
         )
-        bitnessCheckbutton.grid(row=2, column=0, padx=pad, pady=pad)
+        showRawInputCheckbutton.grid(row=2, column=0, padx=pad, pady=pad, columnspan=2, sticky="w")
 
     def aboutWindow(self):
         aboutWindowRoot = Toplevel(self.root)
