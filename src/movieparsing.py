@@ -419,7 +419,7 @@ def inputsToRecording(inputColumnsList, keyCodesList, inputFormatMovieData):
         if len(prevButtonDown) > 0:
             for button in prevButtonDown:
                 if button not in buttonDown:
-                    buttonReleased[0] += [button]
+                    buttonReleased[0] += button
 
         prevButtonDown = buttonDown.copy()
         prevKeyDown = keyDown.copy()
@@ -764,6 +764,7 @@ def saveMovie(pathToMovieFile, loadedMovieData, bitness=32):
 
                 # buttonReleased
                 for element in frame[10]:
+                    print(element)
                     # 10 elements
                     bytesToAdd = bytearray(5)
                     for subelement in element:

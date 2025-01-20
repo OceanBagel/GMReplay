@@ -31,6 +31,16 @@ class FileHistory:
     @staticmethod
     def defaultConfig():
         return FileHistory(game_exe=[""], data_win=[""], movie=[""], maxhistoryentries="10")
+    
+
+@dataclass
+class Debug:
+    show_raw_input_selector: str = "False"
+    show_debug_button: str = "False"
+
+    @staticmethod
+    def defaultConfig():
+        return Debug(show_raw_input_selector="False", show_debug_button="False")
 
 
 @dataclass
@@ -38,10 +48,11 @@ class Configuration:
     # ini sections go here. Each section gets its own class with the options. Options must be lowercase
     General: General
     File_History: FileHistory
+    Debug: Debug
 
     @staticmethod
     def defaultConfig():
-        return Configuration(General=General.defaultConfig(), File_History=FileHistory.defaultConfig())
+        return Configuration(General=General.defaultConfig(), File_History=FileHistory.defaultConfig(), Debug=Debug.defaultConfig())
 
 
 class myConfigParser(ConfigParser):
@@ -111,6 +122,7 @@ def configLoad(configFilePath):
             # indicate a data error (malformed key, etc.)
             print(c.CONFIG_DATA_ERROR_STRING)
 
+            # TODO: Recover existing config data and only reset values that could not be found.
             # Return and save a default config if one couldn't be loaded
             config = Configuration.defaultConfig()
             configSave(config, configFilePath)
