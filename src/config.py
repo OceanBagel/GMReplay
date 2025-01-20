@@ -109,7 +109,9 @@ def configLoad(configFilePath):
 
     if path.isfile(configFilePath):
         # Use config parser to read the ini file into a dictionary
+        # Start with the defaults and then update them with the file
         configParserObj = myConfigParser()
+        configParserObj.read_dict(asdict(Configuration.defaultConfig()))
         configParserObj.read(configFilePath)
         configDict = configParserObj.as_dict()
 
@@ -122,7 +124,6 @@ def configLoad(configFilePath):
             # indicate a data error (malformed key, etc.)
             print(c.CONFIG_DATA_ERROR_STRING)
 
-            # TODO: Recover existing config data and only reset values that could not be found.
             # Return and save a default config if one couldn't be loaded
             config = Configuration.defaultConfig()
             configSave(config, configFilePath)
