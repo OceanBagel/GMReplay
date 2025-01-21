@@ -2,3 +2,4 @@ dacite
 tksheet
 Cython
 setuptools
+pyinstaller
