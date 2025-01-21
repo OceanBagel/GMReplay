@@ -14,7 +14,7 @@ import constants as c
 from config import configLoad, configSave
 from movieparsing import inputsToRecording, loadMovie, recordingToInputs, saveMovie
 from patching import genPatchedExe
-from utils import folder, keyCodes, keyName, openURL, reduceBitwiseOr, rotate2DArray, stringify
+from utils import folder, keyCodes, keyName, openURL, performanceBenchmark, reduceBitwiseOr, rotate2DArray, stringify
 
 
 class mainWindowClass:
@@ -89,7 +89,7 @@ class mainWindowClass:
 
         if self.config.Debug.show_debug_button == "True":
             # Debug button
-            self.debugButton = ttk.Button(self.mainWindowFrame, text="Test", command=print("Test"))
+            self.debugButton = ttk.Button(self.mainWindowFrame, text="Test", command=performanceBenchmark)
             self.debugButton.grid(column=11, row=3, padx=c.GLOBAL_PADDING, pady=c.GLOBAL_PADDING)
 
         # Create the input window

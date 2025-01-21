@@ -186,3 +186,22 @@ def check32BitOr64Bit(exeData):
         # Could not detect (not an exe?)
         print(c.NOT_AN_EXE_ERROR)
         return 0
+
+
+def performanceBenchmark():
+    """
+    Function for benchmarking performance. Copies a string 100,000,000 times and measures how long it takes.
+    """
+    import datetime
+
+    print("Benchmark running ...")
+    ts = datetime.datetime.now()
+    a = "one string"
+    b = "two string"
+    loops = 0
+    for _ in range(100000000):
+        c = a
+        a = b
+        b = c
+        loops += 1
+    print(f"Finished in: {(datetime.datetime.now() - ts).total_seconds()} seconds, loops = {loops}")
