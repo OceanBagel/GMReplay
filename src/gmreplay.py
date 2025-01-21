@@ -23,6 +23,14 @@ def main():
         print(c.MIN_PYTHON_STRING)
         return
 
+    # Close the splash screen right before loading the main window
+    try:
+        import pyi_splash  # type: ignore  # noqa: I001  # pyinstaller import
+
+        pyi_splash.close()
+    except ImportError:
+        pass  # If the import fails, we are not running under pyinstaller and there is no splash screen
+
     # Initialize tkinter window
     mainWindowObj = mainWindowClass()
 

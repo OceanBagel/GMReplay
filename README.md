@@ -79,6 +79,19 @@ GMReplay also requires the following package, installable through pip:
 
 Once you have Python and the required packages installed, download the src folder and run gmreplay.py. This will open GMReplay's graphical user interface (GUI), as well as a console where status notifications will be printed.
 
+### Building to an executable (experimental)
+
+GMReplay can also be built to an executable. This speeds up execution by around 2x thanks to compiling the Python code to C. The following packages are required in addition to the ones listed above:
+- Cython
+- setuptools
+- pyinstaller
+
+These packages as well as the others above are installed during the build process.
+
+To build GMReplay, first download the repository and ensure you have Python 3.12+ installed in the current active environment. Then, run build.bat. This will install any missing packages, compile to C code using Cython, and build the executable using pyinstaller.
+
+Once the build process is finished, you can find GMReplay.exe in the dist folder.
+
 ## How to use
 
 Because this is in early development, it may not be feature-complete or user-friendly yet.
