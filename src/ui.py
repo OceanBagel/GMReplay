@@ -1,7 +1,6 @@
 # Built-in packages
-import subprocess
 from itertools import compress
-from os import getcwd, path, set_blocking
+from os import path
 from tkinter import IntVar, Label, Listbox, Menu, PhotoImage, StringVar, Tk, Toplevel, filedialog, ttk
 
 # Outside packages
@@ -12,8 +11,8 @@ import constants as c
 
 # Local packages
 from config import configLoad, configSave
+from gameprocess import recordOrPlayMovie
 from movieparsing import inputsToRecording, loadMovie, recordingToInputs, saveMovie
-from patching import genPatchedExe
 from utils import folder, keyCodes, keyName, openURL, performanceBenchmark, reduceBitwiseOr, rotate2DArray, stringify
 
 
@@ -513,7 +512,7 @@ class recordPlayRadioButtons:
         self.startButton = ttk.Button(
             frame,
             text=startText,
-            command=lambda: self.recordOrPlayMovie(self.recordPlayVar.get()),
+            command=self.movieStart,
         )
         self.startButton.grid(column=2 + columnOffset, row=0 + rowOffset, padx=pad, pady=pad, sticky="NE")
 
@@ -530,55 +529,6 @@ class recordPlayRadioButtons:
 
         # Alwyas disable Stop on init
         self.disableStop()
-
-    def recordOrPlayMovie(self, selection):
-        ## Handles recording (selection is 1 aka RECORD) or playback (selection is 2 aka PLAY)
-
-        # Attempt to patch the exe file
-        pathToExe = genPatchedExe(self.mainWindowObj.exeFileRow.combobox.get())
-
-        # Save the movie if it's in playback mode
-        if selection == c.PLAY:
-            self.mainWindowObj.saveMovieInputs()
-
-        # Run the game with the record command
-        print(c.GAME_START_STRING)
-        # This one hides the console output
-        if self.mainWindowObj.config.General.suppress_game_debug_output == "True":
-            self.mainWindowObj.gameProcess = subprocess.Popen(
-                [
-                    pathToExe,
-                    ("-record" if selection == c.RECORD else "-playback"),
-                    self.mainWindowObj.movieFileRow.combobox.get(),
-                    "-game",
-                    self.mainWindowObj.dataWinFileRow.combobox.get(),
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.STDOUT,
-            )
-
-        # This one shows the console output
-        else:
-            self.mainWindowObj.gameProcess = subprocess.Popen(
-                [
-                    pathToExe,
-                    ("-record" if selection == c.RECORD else "-playback"),
-                    self.mainWindowObj.movieFileRow.combobox.get(),
-                    "-game",
-                    self.mainWindowObj.dataWinFileRow.combobox.get(),
-                    "-debugoutput",
-                    getcwd() + "\\debugoutput.log",
-                    "|",
-                    "cat",
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            # Prevent blocking of the game process
-            set_blocking(self.mainWindowObj.gameProcess.stdout.fileno(), False)
-
-        # Disable Start, enable Stop, disable radio buttons
-        self.movieStart()
 
     def enableStart(self):
         # Enable the start button
@@ -607,7 +557,9 @@ class recordPlayRadioButtons:
         self.stopButton.config(state="disabled")
 
     def movieStart(self):
-        # Commands to run when the movie starts
+        # Commands to run when the movie starts. Starts the game process and then handles the UI buttons.
+        recordOrPlayMovie(self.mainWindowObj, self.recordPlayVar.get())
+
         self.disableStart()
         self.enableStop()
         self.disableRadio()

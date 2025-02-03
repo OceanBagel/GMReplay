@@ -8,6 +8,7 @@ import constants as c
 from utils import keyName, listIndicesThatAreTrue
 
 
+# TODO: Rewrite this code to work with static C types
 def loadMovie(pathToMovieFile, bitness=32):
     """
     Take a path to the movie file, return a list of frames, each frame containing a list of inputs
